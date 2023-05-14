@@ -20,6 +20,7 @@ import System.IO ( hPutStrLn, stderr )
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text.Lazy as T
 import qualified PromptEditor.DB as DB
+import ChatGPT (sendQuery)
 
 main :: IO ()
 main = do
@@ -28,7 +29,7 @@ main = do
     withConnection dbFilename $ \conn -> do
         DB.initSchema conn
         let personaRepository = DB.createPersonaRepository conn
-            env = Env personaRepository
+            env = Env personaRepository sendQuery
             runIO :: Env -> App a -> IO a
             runIO = flip runReaderT
         scottyT 4000 (runIO env) application

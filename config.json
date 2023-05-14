@@ -1,5 +1,9 @@
 {
     "database": {
         "filename" : "test.db"
+    },
+    "chatGPT": {
+        "apiUrl" : "url",
+        "apiKey" : "key"
     }
 }

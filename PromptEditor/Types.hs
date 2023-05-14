@@ -7,13 +7,17 @@ import Data.Aeson
 import GHC.Generics
 import Control.Monad.Reader
 
-data PersonaData = PersonaData {
+newtype PersonaData = PersonaData {
     description :: String
 } deriving (Show)
 
 data Persona = Persona {
     personaId :: Int,
     personaData :: PersonaData
+}
+
+newtype ChatQuery = ChatQuery {
+    query :: String
 }
 
 instance FromJSON PersonaData where
@@ -41,7 +45,8 @@ uncurry2 :: (a -> b -> c) -> (a, b) -> c
 uncurry2 f (a, b) = f a b
 
 data Env = Env {
-    envRepository :: PersonaRepository
+    envRepository :: PersonaRepository,
+    envSendRequest :: ChatQuery -> IO ()
 }
 
 type App = ReaderT Env IO
@@ -55,12 +60,19 @@ data PersonaRepository = PersonaRepository {
 }
 
 data Config = Config {
-    database :: DatabaseConfig
+    database :: DatabaseConfig,
+    chatGPT :: ChatGPTConfig
 } deriving Generic
 
-data DatabaseConfig = DatabaseConfig {
+newtype DatabaseConfig = DatabaseConfig {
     filename :: String
 } deriving Generic
 
+data ChatGPTConfig = ChatGPTConfig {
+    apiUrl :: String,
+    apiKey :: String
+} deriving Generic
+
+instance FromJSON ChatGPTConfig
 instance FromJSON DatabaseConfig
 instance FromJSON Config
