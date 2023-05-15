@@ -1,5 +1,6 @@
 module PromptEditor.Application where
 
+import PromptEditor.Environment
 import PromptEditor.Types
 import Control.Monad.Reader
 

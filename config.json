@@ -3,7 +3,11 @@
         "filename" : "test.db"
     },
     "chatGPT": {
-        "apiUrl" : "url",
-        "apiKey" : "key"
+        "apiUrl" : {
+            "url": "https://api.openai.com/v1/chat/completions"
+        },
+        "apiKey" : {
+            "key": "key"
+        }
     }
 }

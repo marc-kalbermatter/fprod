@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module PromptEditor.Types where
@@ -14,10 +13,6 @@ newtype PersonaData = PersonaData {
 data Persona = Persona {
     personaId :: Int,
     personaData :: PersonaData
-}
-
-newtype ChatQuery = ChatQuery {
-    query :: String
 }
 
 instance FromJSON PersonaData where
@@ -41,16 +36,6 @@ instance ToJSON Persona where
 personaFromFields :: Int -> String -> Persona
 personaFromFields id descr = Persona id $ PersonaData descr
 
-uncurry2 :: (a -> b -> c) -> (a, b) -> c
-uncurry2 f (a, b) = f a b
-
-data Env = Env {
-    envRepository :: PersonaRepository,
-    envSendRequest :: ChatQuery -> IO ()
-}
-
-type App = ReaderT Env IO
-
 data PersonaRepository = PersonaRepository {
     getAllPersonas :: IO [Persona],
     getPersona :: Int -> IO (Maybe Persona),
@@ -58,21 +43,3 @@ data PersonaRepository = PersonaRepository {
     updatePersona :: Int -> PersonaData -> IO (),
     deletePersona :: Int -> IO ()
 }
-
-data Config = Config {
-    database :: DatabaseConfig,
-    chatGPT :: ChatGPTConfig
-} deriving Generic
-
-newtype DatabaseConfig = DatabaseConfig {
-    filename :: String
-} deriving Generic
-
-data ChatGPTConfig = ChatGPTConfig {
-    apiUrl :: String,
-    apiKey :: String
-} deriving Generic
-
-instance FromJSON ChatGPTConfig
-instance FromJSON DatabaseConfig
-instance FromJSON Config
