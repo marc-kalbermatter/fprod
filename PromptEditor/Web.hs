@@ -30,9 +30,15 @@ main = do
     withConnection dbFilename $ \conn -> do
         DB.initSchema conn
         let personaRepository = DB.createPersonaRepository conn
-            env = Env personaRepository (makeRequest (apiUrl $ chatGPT config, apiKey $ chatGPT config))
+            goalRepository = DB.createGoalRepository conn
+            chatGPTUrl = apiUrl $ chatGPT config
+            chatGPTKey = apiKey $ chatGPT config
+            sendRequest = makeRequest (chatGPTUrl, chatGPTKey)
+            env = Env personaRepository goalRepository sendRequest
+            
             runIO :: Env -> App a -> IO a
             runIO = flip runReaderT
+
         scottyT 4000 (runIO env) application
 
 readConfigOrExit :: IO Config
@@ -52,24 +58,47 @@ application = do
     get "/" $ file "web/build/index.html"
 
     get "/personas" $ do
-        personas <- lift getAllPersonasAction
+        personas <- lift $ getAllAction envPersonaRepository
         json personas
     
     get "/personas/:id" $ do
         id <- param "id"
-        persona <- lift $ getPersonaAction id
+        persona <- lift $ getAction envPersonaRepository id
         json persona
     
-    post "/personas/" $ do
+    post "/personas" $ do
         data' <- jsonData
-        persona <- lift $ createPersonaAction data'
+        persona <- lift $ createAction envPersonaRepository data'
         json (personaId persona)
     
     put "/personas/:id" $ do
         id <- param "id"
         data' <- jsonData
-        lift $ updatePersonaAction id data'
+        lift $ updateAction envPersonaRepository id data'
     
     delete "/personas/:id" $ do
         id <- param "id"
-        lift $ deletePersonaAction id
+        lift $ deleteAction envPersonaRepository id
+    
+    get "/goals" $ do
+        goals <- lift $ getAllAction envGoalRepository
+        json goals
+    
+    get "/goals/:id" $ do
+        id <- param "id"
+        goal <- lift $ getAction envGoalRepository id
+        json goal
+    
+    post "/goals" $ do
+        data' <- jsonData
+        goal <- lift $ createAction envGoalRepository data'
+        json (goalId goal)
+    
+    put "/goals/:id" $ do
+        id <- param "id"
+        data' <- jsonData
+        lift $ updateAction envGoalRepository id data'
+    
+    delete "/goals/:id" $ do
+        id <- param "id"
+        lift $ deleteAction envGoalRepository id

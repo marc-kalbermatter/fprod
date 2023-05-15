@@ -4,27 +4,27 @@ import PromptEditor.Environment
 import PromptEditor.Types
 import Control.Monad.Reader
 
-getAllPersonasAction :: App [Persona]
-getAllPersonasAction = do
-    repository <- asks envRepository
-    liftIO $ getAllPersonas repository
+getAllAction :: (Env -> Repository type' data') -> App [type']
+getAllAction rep = do
+    rep' <- asks rep
+    liftIO $ getAll_ rep'
 
-getPersonaAction :: Int -> App (Maybe Persona)
-getPersonaAction id = do
-    repository <- asks envRepository
-    liftIO $ getPersona repository id
+getAction :: (Env -> Repository type' data') -> Int -> App (Maybe type')
+getAction rep id = do
+    rep' <- asks rep
+    liftIO $ get_ rep' id
 
-createPersonaAction :: PersonaData -> App Persona
-createPersonaAction data' = do
-    repository <- asks envRepository
-    liftIO $ createPersona repository data'
+createAction :: (Env -> Repository type' data') -> data' -> App type'
+createAction rep data' = do
+    rep' <- asks rep
+    liftIO $ create_ rep' data'
 
-updatePersonaAction :: Int -> PersonaData -> App ()
-updatePersonaAction id data' = do
-    repository <- asks envRepository
-    liftIO $ updatePersona repository id data'
+updateAction :: (Env -> Repository type' data') -> Int -> data' -> App ()
+updateAction rep id data' = do
+    rep' <- asks rep
+    lift $ update_ rep' id data'
 
-deletePersonaAction :: Int -> App ()
-deletePersonaAction id = do
-    repository <- asks envRepository
-    liftIO $ deletePersona repository id
+deleteAction :: (Env -> Repository type' data') -> Int -> App ()
+deleteAction rep id = do
+    rep' <- asks rep
+    lift $ delete_ rep' id

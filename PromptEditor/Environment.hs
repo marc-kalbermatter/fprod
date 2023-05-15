@@ -10,7 +10,8 @@ import Control.Monad.Reader
 import Data.Text (Text)
 
 data Env = Env {
-    envRepository :: PersonaRepository,
+    envPersonaRepository :: Repository Persona PersonaData,
+    envGoalRepository :: Repository Goal GoalData,
     envSendRequest :: [Message] -> IO ()
 }
 
