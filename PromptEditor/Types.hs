@@ -1,75 +1,77 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module PromptEditor.Types where
 
 import Data.Aeson
-import GHC.Generics
-import Control.Monad.Reader
+    ( (.:),
+      object,
+      FromJSON(parseJSON),
+      Value(Object),
+      KeyValue((.=)),
+      ToJSON(toJSON) )
+import Control.Monad.Reader ( MonadPlus(mzero) )
 
-newtype PersonaData = PersonaData {
+newtype Data = Data {
     description :: String
 } deriving (Show)
 
-data Persona = Persona {
-    personaId :: Int,
-    personaData :: PersonaData
+data DataWithId = DataWithId {
+    dataId :: Int,
+    content :: Data
 }
 
-newtype GoalData = GoalData {
-    goal :: String
-} deriving(Show)
+newtype Persona = Persona {
+    persona :: DataWithId
+} deriving(FromJSON, ToJSON)
 
-data Goal = Goal {
-    goalId :: Int,
-    goalData :: GoalData
-}
+newtype Goal = Goal {
+    goal :: DataWithId
+} deriving(FromJSON, ToJSON)
 
-instance FromJSON PersonaData where
+newtype ExpertIn = ExpertIn {
+    expertIn :: DataWithId
+} deriving(FromJSON, ToJSON)
+
+newtype Steps = Steps {
+    steps :: DataWithId
+} deriving(FromJSON, ToJSON)
+
+newtype Avoid = Avoid {
+    avoid :: DataWithId
+} deriving(FromJSON, ToJSON)
+
+newtype Format = Format {
+    format :: DataWithId
+} deriving(FromJSON, ToJSON)
+
+instance FromJSON Data where
     parseJSON (Object o) =
-        PersonaData <$> o .: "description"
+        Data <$> o .: "description"
     parseJSON _ = mzero
 
-instance ToJSON PersonaData where
-    toJSON (PersonaData description) =
+instance ToJSON Data where
+    toJSON (Data description) =
         object ["description" .= description]
 
-instance FromJSON Persona where
+instance FromJSON DataWithId where
     parseJSON (Object o) =
-        Persona <$> o .: "id" <*> o .: "description"
+        DataWithId <$> o .: "id" <*> o .: "description"
     parseJSON _ = mzero
 
-instance ToJSON Persona where
-    toJSON (Persona id (PersonaData description)) =
+instance ToJSON DataWithId where
+    toJSON :: DataWithId -> Value
+    toJSON (DataWithId id (Data description)) =
         object ["id" .= id, "description" .= description]
 
-instance FromJSON GoalData where
-    parseJSON (Object o) =
-        GoalData <$> o .: "goal"
-    parseJSON _ = mzero
+dataFromFields :: (Int, String) -> DataWithId
+dataFromFields (id, data_) = DataWithId id $ Data data_
 
-instance ToJSON GoalData where
-    toJSON (GoalData goal) =
-        object ["goal" .= goal]
-
-instance FromJSON Goal where
-    parseJSON (Object o) =
-        Goal <$> o .: "id" <*> o .: "goal"
-    parseJSON _ = mzero
-
-instance ToJSON Goal where
-    toJSON (Goal id (GoalData goal)) =
-        object ["id" .= id, "goal" .= goal]
-
-personaFromFields :: (Int, String) -> Persona
-personaFromFields (id, descr) = Persona id $ PersonaData descr
-
-goalFromFields :: (Int, String) -> Goal
-goalFromFields (id, goal) = Goal id $ GoalData goal
-
-data Repository type' data' = Repository {
+data Repository type' = Repository {
     getAll_ :: IO [type'],
     get_ :: Int -> IO (Maybe type'),
-    create_ :: data' -> IO type',
-    update_ :: Int -> data' -> IO (),
+    create_ :: Data -> IO type',
+    update_ :: Int -> Data -> IO (),
     delete_ :: Int -> IO ()
 }

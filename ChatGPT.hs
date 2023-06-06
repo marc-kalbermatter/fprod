@@ -22,7 +22,7 @@ instance FromJSON Message
 data Prompt = Prompt {
     model :: Text,
     temperature :: Float,
-    messages :: [Message]
+    message :: Message
 } deriving (Show, Generic)
 
 instance ToJSON Prompt
@@ -33,18 +33,11 @@ data APIResponse = APIResponse {
     object :: Text,
     created :: Int,
     model :: Text,
-    choices :: [Choice]
+    choices :: [Message]
 } deriving (Show, Generic)
 
 instance ToJSON APIResponse
 instance FromJSON APIResponse
-
-newtype Choice = Choice {
-    message :: Message
-} deriving (Show, Generic)
-
-instance ToJSON Choice
-instance FromJSON Choice
 
 newtype ApiUrl = ApiUrl {
     url :: Text
@@ -59,15 +52,15 @@ instance ToJSON ApiUrl
 instance FromJSON ApiKey
 instance ToJSON ApiKey
 
-makeRequest :: (ApiUrl, ApiKey) -> [Message] -> IO ()
-makeRequest (openaiUrl, openaiKey) messages = do
+makeRequest :: ApiUrl -> ApiKey -> Message -> IO ()
+makeRequest openaiUrl openaiKey messages = do
     initReq <- parseRequest $ unpack $ "POST " <> url openaiUrl
-    let prompt = Prompt "gpt-3.5-turbo" 1.0 messages -- Add temperature and model here
-    let request = setRequestBodyJSON prompt $ 
+    let prompt = Prompt "gpt-3.5-turbo" 1.0 messages
+    let request = setRequestBodyJSON prompt $
                   setRequestHeader "Authorization" ["Bearer " <> encodeUtf8 (key openaiKey)] $
                   setRequestHeader "Content-Type" ["application/json"] $
                   setRequestHeader "Accept" ["application/json"] initReq
-    response <- httpJSONEither request 
+    response <- httpJSONEither request
     case getResponseBody response of
         Left err -> putStrLn $ "Error: " ++ show err
-        Right resp -> print (message . head . choices $ resp)
+        Right resp -> print (head . choices $ resp)

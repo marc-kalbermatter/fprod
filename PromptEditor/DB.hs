@@ -13,33 +13,73 @@ import Database.SQLite.Simple.ToField (ToField)
 personaTableName :: String
 personaTableName = "personas"
 
-personaFieldNames :: [String]
-personaFieldNames = ["id", "description"]
-
 goalTableName :: String
 goalTableName = "goals"
 
-goalFieldNames :: [String]
-goalFieldNames = ["id", "goal"]
+expertInTableName :: String
+expertInTableName = "expertIn"
 
-createPersonaRepository :: Connection -> Repository Persona PersonaData
+stepsTableName :: String
+stepsTableName = "steps"
+
+avoidTableName :: String
+avoidTableName = "avoid"
+
+formatTableName :: String
+formatTableName = "format"
+
+createPersonaRepository :: Connection -> Repository Persona
 createPersonaRepository conn = Repository {
-    getAll_ = getAll' conn personaFieldNames personaTableName personaFromFields,
-    get_ = get' conn personaFieldNames personaTableName personaFromFields,
+    getAll_ = getAll' conn personaTableName (Persona . dataFromFields),
+    get_ = get' conn personaTableName (Persona . dataFromFields),
     delete_ = delete' conn personaTableName,
-
-    create_ = createPersona conn,
-    update_ = updatePersona conn
+    create_ = create' conn personaTableName Persona,
+    update_ = update' conn personaTableName
 }
 
-createGoalRepository :: Connection -> Repository Goal GoalData
+createGoalRepository :: Connection -> Repository Goal
 createGoalRepository conn = Repository {
-    getAll_ = getAll' conn goalFieldNames goalTableName goalFromFields,
-    get_ = get' conn goalFieldNames goalTableName goalFromFields,
+    getAll_ = getAll' conn goalTableName (Goal . dataFromFields),
+    get_ = get' conn goalTableName (Goal . dataFromFields),
     delete_ = delete' conn goalTableName,
+    create_ = create' conn goalTableName Goal,
+    update_ = update' conn goalTableName
+}
 
-    create_ = createGoal conn,
-    update_ = updateGoal conn
+createExpertInRepository :: Connection -> Repository ExpertIn
+createExpertInRepository conn = Repository {
+    getAll_ = getAll' conn expertInTableName (ExpertIn . dataFromFields),
+    get_ = get' conn expertInTableName (ExpertIn . dataFromFields),
+    delete_ = delete' conn expertInTableName,
+    create_ = create' conn expertInTableName ExpertIn,
+    update_ = update' conn expertInTableName
+}
+
+createStepsRepository :: Connection -> Repository Steps
+createStepsRepository conn = Repository {
+    getAll_ = getAll' conn stepsTableName (Steps . dataFromFields),
+    get_ = get' conn stepsTableName (Steps . dataFromFields),
+    delete_ = delete' conn stepsTableName,
+    create_ = create' conn stepsTableName Steps,
+    update_ = update' conn stepsTableName
+}
+
+createAvoidRepository :: Connection -> Repository Avoid
+createAvoidRepository conn = Repository {
+    getAll_ = getAll' conn avoidTableName (Avoid . dataFromFields),
+    get_ = get' conn avoidTableName (Avoid . dataFromFields),
+    delete_ = delete' conn avoidTableName,
+    create_ = create' conn avoidTableName Avoid,
+    update_ = update' conn avoidTableName
+}
+
+createFormatRepository :: Connection -> Repository Format
+createFormatRepository conn = Repository {
+    getAll_ = getAll' conn formatTableName (Format . dataFromFields),
+    get_ = get' conn formatTableName (Format . dataFromFields),
+    delete_ = delete' conn formatTableName,
+    create_ = create' conn formatTableName Format,
+    update_ = update' conn formatTableName
 }
 
 initSchema :: Connection -> IO ()
@@ -47,21 +87,29 @@ initSchema conn = do
     execute_ conn
         "CREATE TABLE IF NOT EXISTS personas (id INTEGER PRIMARY KEY, description TEXT)"
     execute_ conn
-        "CREATE TABLE IF NOT EXISTS goals (id INTEGER PRIMARY KEY, goal TEXT)"
+        "CREATE TABLE IF NOT EXISTS goals (id INTEGER PRIMARY KEY, description TEXT)"
+    execute_ conn
+        "CREATE TABLE IF NOT EXISTS expertIn (id INTEGER PRIMARY KEY, description TEXT)"
+    execute_ conn
+        "CREATE TABLE IF NOT EXISTS steps (id INTEGER PRIMARY KEY, description TEXT)"
+    execute_ conn
+        "CREATE TABLE IF NOT EXISTS avoid (id INTEGER PRIMARY KEY, description TEXT)"
+    execute_ conn
+        "CREATE TABLE IF NOT EXISTS format (id INTEGER PRIMARY KEY, description TEXT)"
 
 query' :: String -> Query
 query' q = Query $ pack q
 
-getAll' :: FromRow a => Connection -> [String] -> String -> (a -> b) -> IO [b]
-getAll' conn fields table createFunc = do
+getAll' :: FromRow a => Connection -> String -> (a -> b) -> IO [b]
+getAll' conn table createFunc = do
     res <- query_ conn (query'
-        ("SELECT " ++ intercalate ", " fields  ++ " FROM " ++ table ++ " ORDER BY id ASC"))
+        ("SELECT id, description FROM " ++ table ++ " ORDER BY id ASC"))
     return $ map createFunc res
 
-get' :: FromRow a => Connection -> [String] -> String -> (a -> b) -> Int -> IO (Maybe b)
-get' conn fields table createFunc id = do
+get' :: FromRow a => Connection -> String -> (a -> b) -> Int -> IO (Maybe b)
+get' conn table createFunc id = do
     mt <- queryNamed conn (query'
-        ("SELECT " ++ intercalate ", " fields ++ " FROM " ++ table ++ " WHERE id = :id"))
+        ("SELECT id, description FROM " ++ table ++ " WHERE id = :id"))
         [":id" := id]
     return $ listToMaybe $ map createFunc mt
 
@@ -71,30 +119,16 @@ delete' conn table id = do
         ("DELETE FROM " ++ table ++ " WHERE id = :id"))
         [":id" := id]
 
-createPersona :: Connection -> PersonaData -> IO Persona
-createPersona conn t@(PersonaData description) = withExclusiveTransaction conn $ do
-    execute conn
-        "INSERT INTO personas (description) VALUES (?)"
+create' :: Connection -> String -> (DataWithId -> a) -> Data -> IO a
+create' conn table createFunc t@(Data description) = withExclusiveTransaction conn $ do
+    execute conn (query'
+        ("INSERT INTO " ++ table ++ "(description) VALUES (?)"))
         (Only description)
     rowId <- lastInsertRowId conn
-    return $ Persona (fromIntegral rowId) t
+    return $ createFunc $ DataWithId (fromIntegral rowId) t
 
-updatePersona :: Connection -> Int -> PersonaData -> IO ()
-updatePersona conn id (PersonaData description) = do
-    executeNamed conn
-        "UPDATE personas SET description = :description WHERE id = :id"
+update' :: Connection -> String -> Int -> Data -> IO ()
+update' conn table id (Data description) = do
+    executeNamed conn (query'
+        ("UPDATE " ++ table ++ " SET description = :description WHERE id = :id"))
         [":id" := id, ":description" := description]
-
-createGoal :: Connection -> GoalData -> IO Goal
-createGoal conn t@(GoalData goal) = withExclusiveTransaction conn $ do
-    execute conn
-        "INSERT INTO goals (goal) VALUES (?)"
-        (Only goal)
-    rowId <- lastInsertRowId conn
-    return $ Goal (fromIntegral rowId) t
-
-updateGoal :: Connection -> Int -> GoalData -> IO ()
-updateGoal conn id (GoalData goal) = do
-    executeNamed conn
-        "UPDATE goals SET goal = :goal WHERE id = :id"
-        [":id" := id, ":goal" := goal]

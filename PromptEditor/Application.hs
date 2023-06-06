@@ -1,30 +1,30 @@
 module PromptEditor.Application where
 
-import PromptEditor.Environment
-import PromptEditor.Types
-import Control.Monad.Reader
+import PromptEditor.Environment ( App, Env )
+import PromptEditor.Types ( Repository(delete_, getAll_, get_, create_, update_), Data )
+import Control.Monad.Reader ( asks, MonadIO(liftIO), MonadTrans(lift) )
 
-getAllAction :: (Env -> Repository type' data') -> App [type']
+getAllAction :: (Env -> Repository type') -> App [type']
 getAllAction rep = do
     rep' <- asks rep
     liftIO $ getAll_ rep'
 
-getAction :: (Env -> Repository type' data') -> Int -> App (Maybe type')
+getAction :: (Env -> Repository type') -> Int -> App (Maybe type')
 getAction rep id = do
     rep' <- asks rep
     liftIO $ get_ rep' id
 
-createAction :: (Env -> Repository type' data') -> data' -> App type'
+createAction :: (Env -> Repository type') -> Data -> App type'
 createAction rep data' = do
     rep' <- asks rep
     liftIO $ create_ rep' data'
 
-updateAction :: (Env -> Repository type' data') -> Int -> data' -> App ()
+updateAction :: (Env -> Repository type') -> Int -> Data -> App ()
 updateAction rep id data' = do
     rep' <- asks rep
     lift $ update_ rep' id data'
 
-deleteAction :: (Env -> Repository type' data') -> Int -> App ()
+deleteAction :: (Env -> Repository type') -> Int -> App ()
 deleteAction rep id = do
     rep' <- asks rep
     lift $ delete_ rep' id
