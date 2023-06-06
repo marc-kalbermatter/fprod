@@ -12,8 +12,8 @@ import Data.Aeson
 import Network.HTTP.Simple
 
 data Message = Message {
-    role :: Text,
-    content :: Text
+    role :: String,
+    content :: String
 } deriving (Show, Generic)
 
 instance ToJSON Message
@@ -51,6 +51,22 @@ instance FromJSON ApiUrl
 instance ToJSON ApiUrl
 instance FromJSON ApiKey
 instance ToJSON ApiKey
+
+getDescription :: DataWithId -> String
+getDescription d = description $ PromptEditor.Types.content d
+
+parseMessage :: PromptEditor.Types.Request -> Message
+parseMessage (Request p g e s a f) = Message (description (PromptEditor.Types.content $ persona p)) content' where
+    content' = "the goal is: "
+        ++ getDescription (goal g)
+        ++ "you are an expert in: "
+        ++ getDescription (expert e)
+        ++ "follow the steps: "
+        ++ getDescription (steps s)
+        ++ "avoid "
+        ++ getDescription (avoid a)
+        ++ "use the format: "
+        ++ getDescription (format f)
 
 makeRequest :: ApiUrl -> ApiKey -> Message -> IO ()
 makeRequest openaiUrl openaiKey messages = do

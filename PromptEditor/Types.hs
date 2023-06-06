@@ -46,6 +46,15 @@ newtype Format = Format {
     format :: DataWithId
 } deriving(FromJSON, ToJSON)
 
+data Request = Request {
+    persona_ :: Persona,
+    goal_ :: Goal,
+    expert_ :: Expert,
+    steps_ :: Steps,
+    avoid_ :: Avoid,
+    format_ :: Format
+}
+
 instance FromJSON Data where
     parseJSON (Object o) =
         Data <$> o .: "description"
