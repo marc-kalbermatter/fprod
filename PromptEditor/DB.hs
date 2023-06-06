@@ -16,17 +16,17 @@ personaTableName = "personas"
 goalTableName :: String
 goalTableName = "goals"
 
-expertInTableName :: String
-expertInTableName = "expertIn"
+expertTableName :: String
+expertTableName = "experts"
 
 stepsTableName :: String
 stepsTableName = "steps"
 
 avoidTableName :: String
-avoidTableName = "avoid"
+avoidTableName = "avoids"
 
 formatTableName :: String
-formatTableName = "format"
+formatTableName = "formats"
 
 createPersonaRepository :: Connection -> Repository Persona
 createPersonaRepository conn = Repository {
@@ -46,13 +46,13 @@ createGoalRepository conn = Repository {
     update_ = update' conn goalTableName
 }
 
-createExpertInRepository :: Connection -> Repository ExpertIn
-createExpertInRepository conn = Repository {
-    getAll_ = getAll' conn expertInTableName (ExpertIn . dataFromFields),
-    get_ = get' conn expertInTableName (ExpertIn . dataFromFields),
-    delete_ = delete' conn expertInTableName,
-    create_ = create' conn expertInTableName ExpertIn,
-    update_ = update' conn expertInTableName
+createExpertRepository :: Connection -> Repository Expert
+createExpertRepository conn = Repository {
+    getAll_ = getAll' conn expertTableName (Expert . dataFromFields),
+    get_ = get' conn expertTableName (Expert . dataFromFields),
+    delete_ = delete' conn expertTableName,
+    create_ = create' conn expertTableName Expert,
+    update_ = update' conn expertTableName
 }
 
 createStepsRepository :: Connection -> Repository Steps
@@ -82,20 +82,19 @@ createFormatRepository conn = Repository {
     update_ = update' conn formatTableName
 }
 
+createTable :: String -> Connection -> IO ()
+createTable tableName conn = do
+    execute_ conn (query'
+        ("CREATE TABLE IF NOT EXISTS " ++ tableName ++ "(id INTEGER PRIMARY KEY, description TEXT)"))
+
 initSchema :: Connection -> IO ()
 initSchema conn = do
-    execute_ conn
-        "CREATE TABLE IF NOT EXISTS personas (id INTEGER PRIMARY KEY, description TEXT)"
-    execute_ conn
-        "CREATE TABLE IF NOT EXISTS goals (id INTEGER PRIMARY KEY, description TEXT)"
-    execute_ conn
-        "CREATE TABLE IF NOT EXISTS expertIn (id INTEGER PRIMARY KEY, description TEXT)"
-    execute_ conn
-        "CREATE TABLE IF NOT EXISTS steps (id INTEGER PRIMARY KEY, description TEXT)"
-    execute_ conn
-        "CREATE TABLE IF NOT EXISTS avoid (id INTEGER PRIMARY KEY, description TEXT)"
-    execute_ conn
-        "CREATE TABLE IF NOT EXISTS format (id INTEGER PRIMARY KEY, description TEXT)"
+    createTable personaTableName conn
+    createTable goalTableName conn
+    createTable expertTableName conn
+    createTable stepsTableName conn
+    createTable avoidTableName conn
+    createTable formatTableName conn
 
 query' :: String -> Query
 query' q = Query $ pack q

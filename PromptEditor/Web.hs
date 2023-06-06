@@ -32,7 +32,7 @@ main = do
         DB.initSchema conn
         let personaRepository = DB.createPersonaRepository conn
             goalRepository = DB.createGoalRepository conn
-            expertInRepostiroty = DB.createExpertInRepository conn
+            expertRepository = DB.createExpertRepository conn
             stepsRepostiroty = DB.createStepsRepository conn
             avoidRepostiroty = DB.createAvoidRepository conn
             formatRepostiroty = DB.createFormatRepository conn
@@ -42,7 +42,7 @@ main = do
             env = Env
                     personaRepository
                     goalRepository
-                    expertInRepostiroty
+                    expertRepository
                     stepsRepostiroty
                     avoidRepostiroty
                     formatRepostiroty
@@ -73,7 +73,7 @@ application = do
 
     endpoints "goals" envGoalRepository
     
-    endpoints "expertIn" envExpertInRepository
+    endpoints "experts" envExpertRepository
 
     endpoints "steps" envStepsRepository
 

@@ -12,7 +12,7 @@ import Data.Text (Text)
 data Env = Env {
     envPersonaRepository :: Repository Persona,
     envGoalRepository :: Repository Goal,
-    envExpertInRepository :: Repository ExpertIn,
+    envExpertRepository :: Repository Expert,
     envStepsRepository :: Repository Steps,
     envAvoidRepository :: Repository Avoid,
     envFormatRepository :: Repository Format,

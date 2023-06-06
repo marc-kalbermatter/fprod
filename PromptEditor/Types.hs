@@ -30,8 +30,8 @@ newtype Goal = Goal {
     goal :: DataWithId
 } deriving(FromJSON, ToJSON)
 
-newtype ExpertIn = ExpertIn {
-    expertIn :: DataWithId
+newtype Expert = Expert {
+    expert :: DataWithId
 } deriving(FromJSON, ToJSON)
 
 newtype Steps = Steps {
