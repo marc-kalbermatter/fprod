@@ -31,6 +31,8 @@ elm-stuff
 # elm-repl generated files
 repl-temp-*
 
+node_modules
+
 
 ## vscode: https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
 
