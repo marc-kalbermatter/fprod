@@ -14,6 +14,20 @@ type Msg
     | StepsReceived (RequestStatus (List Data))
     | AvoidsReceived (RequestStatus (List Data))
     | FormatsReceived (RequestStatus (List Data))
+    | UpdatePersona Data
+    | SavePersona Data
+    | UpdateGoal Data
+    | SaveGoal Data
+    | UpdateExpert Data
+    | SaveExpert Data
+    | UpdateSteps Data
+    | SaveSteps Data
+    | UpdateAvoid Data
+    | SaveAvoid Data
+    | UpdateFormat Data
+    | SaveFormat Data
+    | DataUpdated
+    | NoneMsg
 
 type alias Data =
     { id: Int
