@@ -1,7 +1,7 @@
 {
     "name": "frontend",
     "version": "1.0.0",
-    "description": "WebTasks frontend",
+    "description": "Prompt editor frontend",
     "main": "index.html",
     "dependencies": {
       "elm-webpack-loader": "^8.0.0",

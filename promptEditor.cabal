@@ -5,12 +5,13 @@ cabal-version:          >=1.10
 
 executable promptEditor
     main-is:            Main.hs
-    other-modules:      PromptEditor.Types, PromptEditor.Environment, PromptEditor.Web, PromptEditor.DB, PromptEditor.Application, ChatGPT
+    other-modules:      PromptEditor.Types, PromptEditor.Environment, PromptEditor.Web, PromptEditor.DB, PromptEditor.Application, PromptEditor.ChatGPT
     build-depends:      base >= 4.7
                         ,sqlite-simple
                         ,aeson
                         ,wai-extra
                         ,wai-middleware-static
+                        ,wai-cors
                         ,bytestring
                         ,transformers
                         ,mtl
