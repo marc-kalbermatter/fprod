@@ -5,7 +5,7 @@ cabal-version:          >=1.10
 
 executable promptEditor
     main-is:            Main.hs
-    other-modules:      PromptEditor.Types, PromptEditor.Web, PromptEditor.DB, PromptEditor.Application, ChatGPT
+    other-modules:      PromptEditor.Types, PromptEditor.Environment, PromptEditor.Web, PromptEditor.DB, PromptEditor.Application, ChatGPT
     build-depends:      base >= 4.7
                         ,sqlite-simple
                         ,aeson
@@ -15,5 +15,6 @@ executable promptEditor
                         ,transformers
                         ,mtl
                         ,scotty
+                        ,http-conduit
                         ,text
     default-language:   Haskell2010

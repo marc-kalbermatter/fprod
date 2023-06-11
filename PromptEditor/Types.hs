@@ -1,78 +1,86 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module PromptEditor.Types where
 
 import Data.Aeson
-import GHC.Generics
-import Control.Monad.Reader
+    ( (.:),
+      object,
+      FromJSON(parseJSON),
+      Value(Object),
+      KeyValue((.=)),
+      ToJSON(toJSON) )
+import Control.Monad.Reader ( MonadPlus(mzero) )
 
-newtype PersonaData = PersonaData {
+newtype Data = Data {
     description :: String
 } deriving (Show)
 
-data Persona = Persona {
-    personaId :: Int,
-    personaData :: PersonaData
+data DataWithId = DataWithId {
+    dataId :: Int,
+    content :: Data
 }
 
-newtype ChatQuery = ChatQuery {
-    query :: String
+newtype Persona = Persona {
+    persona :: DataWithId
+} deriving(FromJSON, ToJSON)
+
+newtype Goal = Goal {
+    goal :: DataWithId
+} deriving(FromJSON, ToJSON)
+
+newtype Expert = Expert {
+    expert :: DataWithId
+} deriving(FromJSON, ToJSON)
+
+newtype Steps = Steps {
+    steps :: DataWithId
+} deriving(FromJSON, ToJSON)
+
+newtype Avoid = Avoid {
+    avoid :: DataWithId
+} deriving(FromJSON, ToJSON)
+
+newtype Format = Format {
+    format :: DataWithId
+} deriving(FromJSON, ToJSON)
+
+data Request = Request {
+    persona_ :: Persona,
+    goal_ :: Goal,
+    expert_ :: Expert,
+    steps_ :: Steps,
+    avoid_ :: Avoid,
+    format_ :: Format
 }
 
-instance FromJSON PersonaData where
+instance FromJSON Data where
     parseJSON (Object o) =
-        PersonaData <$> o .: "description"
+        Data <$> o .: "description"
     parseJSON _ = mzero
 
-instance ToJSON PersonaData where
-    toJSON (PersonaData description) =
+instance ToJSON Data where
+    toJSON (Data description) =
         object ["description" .= description]
 
-instance FromJSON Persona where
+instance FromJSON DataWithId where
     parseJSON (Object o) =
-        Persona <$> o .: "id" <*> o .: "description"
+        DataWithId <$> o .: "id" <*> o .: "description"
     parseJSON _ = mzero
 
-instance ToJSON Persona where
-    toJSON (Persona id (PersonaData description)) =
+instance ToJSON DataWithId where
+    toJSON :: DataWithId -> Value
+    toJSON (DataWithId id (Data description)) =
         object ["id" .= id, "description" .= description]
 
-personaFromFields :: Int -> String -> Persona
-personaFromFields id descr = Persona id $ PersonaData descr
+dataFromFields :: (Int, String) -> DataWithId
+dataFromFields (id, data_) = DataWithId id $ Data data_
 
-uncurry2 :: (a -> b -> c) -> (a, b) -> c
-uncurry2 f (a, b) = f a b
-
-data Env = Env {
-    envRepository :: PersonaRepository,
-    envSendRequest :: ChatQuery -> IO ()
+data Repository type' = Repository {
+    getAll_ :: IO [type'],
+    get_ :: Int -> IO (Maybe type'),
+    create_ :: Data -> IO type',
+    update_ :: Int -> Data -> IO (),
+    delete_ :: Int -> IO ()
 }
-
-type App = ReaderT Env IO
-
-data PersonaRepository = PersonaRepository {
-    getAllPersonas :: IO [Persona],
-    getPersona :: Int -> IO (Maybe Persona),
-    createPersona :: PersonaData -> IO Persona,
-    updatePersona :: Int -> PersonaData -> IO (),
-    deletePersona :: Int -> IO ()
-}
-
-data Config = Config {
-    database :: DatabaseConfig,
-    chatGPT :: ChatGPTConfig
-} deriving Generic
-
-newtype DatabaseConfig = DatabaseConfig {
-    filename :: String
-} deriving Generic
-
-data ChatGPTConfig = ChatGPTConfig {
-    apiUrl :: String,
-    apiKey :: String
-} deriving Generic
-
-instance FromJSON ChatGPTConfig
-instance FromJSON DatabaseConfig
-instance FromJSON Config

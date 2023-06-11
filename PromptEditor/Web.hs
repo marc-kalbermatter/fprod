@@ -2,6 +2,8 @@
 
 module PromptEditor.Web where
 
+import ChatGPT
+import PromptEditor.Environment
 import PromptEditor.Types
 import PromptEditor.Application
 import Database.SQLite.Simple (withConnection, Connection)
@@ -9,7 +11,7 @@ import Control.Applicative ()
 import Control.Monad (mzero)
 import Control.Monad.IO.Class (liftIO)
 import Data.Monoid (mconcat)
-import Data.Aeson ( eitherDecode )
+import Data.Aeson ( eitherDecode, ToJSON )
 import Web.Scotty.Trans
 import Control.Monad.Reader ( ReaderT(runReaderT), MonadTrans (lift) )
 import Network.Wai.Middleware.RequestLogger ( logStdoutDev )
@@ -20,7 +22,7 @@ import System.IO ( hPutStrLn, stderr )
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text.Lazy as T
 import qualified PromptEditor.DB as DB
-import ChatGPT (sendQuery)
+import Web.Scotty.Internal.Types (RoutePattern(Capture))
 
 main :: IO ()
 main = do
@@ -29,9 +31,26 @@ main = do
     withConnection dbFilename $ \conn -> do
         DB.initSchema conn
         let personaRepository = DB.createPersonaRepository conn
-            env = Env personaRepository sendQuery
+            goalRepository = DB.createGoalRepository conn
+            expertRepository = DB.createExpertRepository conn
+            stepsRepostiroty = DB.createStepsRepository conn
+            avoidRepostiroty = DB.createAvoidRepository conn
+            formatRepostiroty = DB.createFormatRepository conn
+            chatGPTUrl = apiUrl $ chatGPT config
+            chatGPTKey = apiKey $ chatGPT config
+            sendRequest = makeRequest chatGPTUrl chatGPTKey
+            env = Env
+                    personaRepository
+                    goalRepository
+                    expertRepository
+                    stepsRepostiroty
+                    avoidRepostiroty
+                    formatRepostiroty
+                    sendRequest
+            
             runIO :: Env -> App a -> IO a
             runIO = flip runReaderT
+
         scottyT 4000 (runIO env) application
 
 readConfigOrExit :: IO Config
@@ -50,25 +69,43 @@ application = do
 
     get "/" $ file "web/build/index.html"
 
-    get "/personas" $ do
-        personas <- lift getAllPersonasAction
-        json personas
+    endpoints "personas" envPersonaRepository
+
+    endpoints "goals" envGoalRepository
     
-    get "/personas/:id" $ do
+    endpoints "experts" envExpertRepository
+
+    endpoints "steps" envStepsRepository
+
+    endpoints "avoids" envAvoidRepository
+
+    endpoints "formats" envFormatRepository
+
+routePattern :: String -> RoutePattern
+routePattern = Capture . T.pack
+
+endpoints :: ToJSON a => String -> (Env -> Repository a) -> ScottyT T.Text App ()
+endpoints typeName env = do
+
+    get (routePattern ("/" ++ typeName)) $ do
+        expertIn <- lift $ getAllAction env
+        json expertIn
+    
+    get (routePattern ("/" ++ typeName ++ "/:id")) $ do
         id <- param "id"
-        persona <- lift $ getPersonaAction id
-        json persona
+        expertIn <- lift $ getAction env id
+        json expertIn
     
-    post "/personas/" $ do
+    post (routePattern ("/" ++ typeName)) $ do
         data' <- jsonData
-        persona <- lift $ createPersonaAction data'
-        json (personaId persona)
-    
-    put "/personas/:id" $ do
+        dataWithId <- lift $ createAction env data'
+        json dataWithId
+
+    put (routePattern ("/" ++ typeName ++ "/:id")) $ do
         id <- param "id"
         data' <- jsonData
-        lift $ updatePersonaAction id data'
+        lift $ updateAction env id data'
     
-    delete "/personas/:id" $ do
+    delete (routePattern ("/" ++ typeName ++ "/:id")) $ do
         id <- param "id"
-        lift $ deletePersonaAction id
+        lift $ deleteAction env id

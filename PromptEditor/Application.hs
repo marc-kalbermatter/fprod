@@ -1,29 +1,30 @@
 module PromptEditor.Application where
 
-import PromptEditor.Types
-import Control.Monad.Reader
+import PromptEditor.Environment ( App, Env )
+import PromptEditor.Types ( Repository(delete_, getAll_, get_, create_, update_), Data )
+import Control.Monad.Reader ( asks, MonadIO(liftIO), MonadTrans(lift) )
 
-getAllPersonasAction :: App [Persona]
-getAllPersonasAction = do
-    repository <- asks envRepository
-    liftIO $ getAllPersonas repository
+getAllAction :: (Env -> Repository type') -> App [type']
+getAllAction rep = do
+    rep' <- asks rep
+    liftIO $ getAll_ rep'
 
-getPersonaAction :: Int -> App (Maybe Persona)
-getPersonaAction id = do
-    repository <- asks envRepository
-    liftIO $ getPersona repository id
+getAction :: (Env -> Repository type') -> Int -> App (Maybe type')
+getAction rep id = do
+    rep' <- asks rep
+    liftIO $ get_ rep' id
 
-createPersonaAction :: PersonaData -> App Persona
-createPersonaAction data' = do
-    repository <- asks envRepository
-    liftIO $ createPersona repository data'
+createAction :: (Env -> Repository type') -> Data -> App type'
+createAction rep data' = do
+    rep' <- asks rep
+    liftIO $ create_ rep' data'
 
-updatePersonaAction :: Int -> PersonaData -> App ()
-updatePersonaAction id data' = do
-    repository <- asks envRepository
-    liftIO $ updatePersona repository id data'
+updateAction :: (Env -> Repository type') -> Int -> Data -> App ()
+updateAction rep id data' = do
+    rep' <- asks rep
+    lift $ update_ rep' id data'
 
-deletePersonaAction :: Int -> App ()
-deletePersonaAction id = do
-    repository <- asks envRepository
-    liftIO $ deletePersona repository id
+deleteAction :: (Env -> Repository type') -> Int -> App ()
+deleteAction rep id = do
+    rep' <- asks rep
+    lift $ delete_ rep' id
