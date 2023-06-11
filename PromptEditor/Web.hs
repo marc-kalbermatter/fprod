@@ -2,7 +2,7 @@
 
 module PromptEditor.Web where
 
-import ChatGPT
+import PromptEditor.ChatGPT
 import PromptEditor.Environment
 import PromptEditor.Types
 import PromptEditor.Application
@@ -15,7 +15,8 @@ import Data.Aeson ( eitherDecode, ToJSON )
 import Web.Scotty.Trans
 import Control.Monad.Reader ( ReaderT(runReaderT), MonadTrans (lift) )
 import Network.Wai.Middleware.RequestLogger ( logStdoutDev )
-import Network.Wai.Middleware.Static ( (>->), addBase, noDots, staticPolicy )
+import Network.Wai.Middleware.Cors ( simpleCors )
+import Network.Wai.Middleware.Static ( (>->), addBase, noDots, staticPolicy, unsafeStaticPolicy )
 import System.Exit ( exitFailure )
 import System.IO ( hPutStrLn, stderr )
 
@@ -65,27 +66,31 @@ readConfigOrExit = do
 application :: ScottyT T.Text App ()
 application = do
     middleware logStdoutDev
-    middleware $ staticPolicy (noDots >-> addBase "web/build")
+    middleware simpleCors
 
-    get "/" $ file "web/build/index.html"
+    get "/" $ file "ElmMain/src/index.html"
 
-    endpoints "personas" envPersonaRepository
+    crudEndpoints "personas" envPersonaRepository
 
-    endpoints "goals" envGoalRepository
+    crudEndpoints "goals" envGoalRepository
     
-    endpoints "experts" envExpertRepository
+    crudEndpoints "experts" envExpertRepository
 
-    endpoints "steps" envStepsRepository
+    crudEndpoints "steps" envStepsRepository
 
-    endpoints "avoids" envAvoidRepository
+    crudEndpoints "avoids" envAvoidRepository
 
-    endpoints "formats" envFormatRepository
+    crudEndpoints "formats" envFormatRepository
+
+    --post "/chat-gpt-request" $ do
+    --    requestData <- jsonData
+
 
 routePattern :: String -> RoutePattern
 routePattern = Capture . T.pack
 
-endpoints :: ToJSON a => String -> (Env -> Repository a) -> ScottyT T.Text App ()
-endpoints typeName env = do
+crudEndpoints :: ToJSON a => String -> (Env -> Repository a) -> ScottyT T.Text App ()
+crudEndpoints typeName env = do
 
     get (routePattern ("/" ++ typeName)) $ do
         expertIn <- lift $ getAllAction env

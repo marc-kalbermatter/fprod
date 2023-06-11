@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 
-module ChatGPT where
+module PromptEditor.ChatGPT where
 
 import PromptEditor.Types
 import GHC.Generics

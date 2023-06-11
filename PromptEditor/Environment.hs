@@ -2,7 +2,7 @@
 
 module PromptEditor.Environment where
 
-import ChatGPT
+import PromptEditor.ChatGPT
 import PromptEditor.Types
 import Data.Aeson
 import GHC.Generics
