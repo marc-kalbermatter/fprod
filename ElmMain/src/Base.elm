@@ -39,6 +39,13 @@ type Msg
     | SelectAvoid Data
     | SelectFormat Data
     | DataUpdated
+    | NewPersonaChanged String
+    | NewGoalChanged String
+    | NewExpertChanged String
+    | NewStepsChanged String
+    | NewAvoidChanged String
+    | NewFormatChanged String
+    | SaveNew String String
     | NoneMsg
 
 type alias Data =

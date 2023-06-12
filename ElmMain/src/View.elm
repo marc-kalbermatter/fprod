@@ -2,9 +2,8 @@ module View exposing (..)
 
 import Base exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
-import Html.Events exposing (onInput)
+import Html.Attributes exposing (class, value, type_)
+import Html.Events exposing (onClick, onInput)
 
 navBar : Html Msg -> Html Msg
 navBar body = div []
@@ -15,6 +14,13 @@ navBar body = div []
             ]
         ]
         , div [ class "m-3" ] [ body ]
+    ]
+
+addForm : String -> String -> String -> (String -> Msg) -> (String -> String -> Msg) -> Html Msg
+addForm title url data update save = div []
+    [ h3 [] [ text title]
+    , input [ type_ "text", value data, onInput update ] []
+    , button [ onClick (save url data) ] [ text "Save" ]
     ]
 
 viewPersonas : RequestStatus (List Data) -> Maybe Data -> Html Msg

@@ -24,6 +24,12 @@ type alias Model =
     , selectedSteps: Maybe Data
     , selectedAvoid: Maybe Data
     , selectedFormat: Maybe Data
+    , newPersona: String
+    , newGoal: String
+    , newExpert: String
+    , newSteps: String
+    , newAvoid: String
+    , newFormat: String
     , page : Page
     }
 
@@ -51,6 +57,12 @@ initModel =
         , selectedSteps = Nothing
         , selectedAvoid = Nothing
         , selectedFormat = Nothing
+        , newPersona = ""
+        , newGoal = ""
+        , newExpert = ""
+        , newSteps = ""
+        , newAvoid = ""
+        , newFormat = ""
         , page = HomePage
         }
     , getPersonas Nothing
@@ -90,45 +102,74 @@ view model =
                 ])
         EditPage -> navBar (
             div []
-                [
-                    text "TODO"
+                [ addForm "Persona" "personas" model.newPersona NewPersonaChanged SaveNew
+                , addForm "Goal" "goals" model.newGoal NewGoalChanged SaveNew
+                , addForm "Expert" "experts" model.newExpert NewExpertChanged SaveNew
+                , addForm "Steps" "steps" model.newSteps NewStepsChanged SaveNew
+                , addForm "Avoid" "avoids" model.newAvoid NewAvoidChanged SaveNew
+                , addForm "Format" "formats" model.newFormat NewFormatChanged SaveNew
                 ])
 
 update : Msg ->  Model ->  (Model, Cmd Msg)
 update msg model = 
     case (model.page, msg) of
-        (HomePage, PersonasReceived p) -> ( {model | personas = p }, getGoals Nothing )
-        (HomePage, GoalsReceived g) -> ( {model | goals = g }, getExperts Nothing )
-        (HomePage, ExpertsReceived e) -> ( {model | experts = e }, getSteps Nothing )
-        (HomePage, StepsReceived s) -> ( {model | steps = s }, getAvoids Nothing )
-        (HomePage, AvoidsReceived a) -> ( {model | avoids = a }, getFormats Nothing )
-        (HomePage, FormatsReceived f) -> ( {model | formats = f }, Cmd.none )
-        (HomePage, UpdatePersona x) -> ( {model | personas = updateData x model.personas}, Cmd.none )
-        (HomePage, UpdateGoal x) -> ( {model | goals = updateData x model.goals}, Cmd.none )
-        (HomePage, UpdateExpert x) -> ( {model | experts = updateData x model.experts}, Cmd.none )
-        (HomePage, UpdateSteps x) -> ( {model | steps = updateData x model.steps}, Cmd.none )
-        (HomePage, UpdateAvoid x) -> ( {model | avoids = updateData x model.avoids}, Cmd.none )
-        (HomePage, UpdateFormat x) -> ( {model | formats = updateData x model.formats}, Cmd.none )
-        (HomePage, SavePersona x) -> (model, updatePersona x)
-        (HomePage, SaveGoal x) -> (model, updateGoal x)
-        (HomePage, SaveExpert x) -> (model, updateExpert x)
-        (HomePage, SaveSteps x) -> (model, updateSteps x)
-        (HomePage, SaveAvoid x) -> (model, updateAvoid x)
-        (HomePage, SaveFormat x) -> (model, updateFormat x)
-        (HomePage, DeletePersona x) -> (model, deletePersona x)
-        (HomePage, DeleteGoal x) -> (model, deleteGoal x)
-        (HomePage, DeleteExpert x) -> (model, deleteExpert x)
-        (HomePage, DeleteSteps x) -> (model, deleteSteps x)
-        (HomePage, DeleteAvoid x) -> (model, deleteAvoid x)
-        (HomePage, SelectPersona x) -> ( {model | selectedPersona = Just x}, Cmd.none )
-        (HomePage, SelectGoal x) -> ( {model | selectedGoal = Just x}, Cmd.none )
-        (HomePage, SelectExpert x) -> ( {model | selectedExpert = Just x}, Cmd.none )
-        (HomePage, SelectSteps x) -> ( {model | selectedSteps = Just x}, Cmd.none )
-        (HomePage, SelectAvoid x) -> ( {model | selectedAvoid = Just x}, Cmd.none )
-        (HomePage, SelectFormat x) -> ( {model | selectedFormat = Just x}, Cmd.none )
-        (HomePage, DataUpdated) -> (model, getPersonas Nothing)
-        (_, NavigateTo page) -> ( { model | page = page }, Cmd.none )
-        (_, _) -> (model, Cmd.none)
+        (_, NavigateTo EditPage) -> ( { model | page = EditPage }, Cmd.none )
+        (_, NavigateTo HomePage) -> ( { model | page = HomePage }, getPersonas Nothing )
+        (HomePage, _) -> updateHomePage msg model
+        (EditPage, _) -> updateEditPage msg model
+
+updateHomePage : Msg -> Model -> (Model, Cmd Msg)
+updateHomePage msg model =
+    case msg of
+        PersonasReceived p -> ( {model | personas = p }, getGoals Nothing )
+        GoalsReceived g -> ( {model | goals = g }, getExperts Nothing )
+        ExpertsReceived e -> ( {model | experts = e }, getSteps Nothing )
+        StepsReceived s -> ( {model | steps = s }, getAvoids Nothing )
+        AvoidsReceived a -> ( {model | avoids = a }, getFormats Nothing )
+        FormatsReceived f -> ( {model | formats = f }, Cmd.none )
+        UpdatePersona x -> ( {model | personas = updateData x model.personas}, Cmd.none )
+        UpdateGoal x -> ( {model | goals = updateData x model.goals}, Cmd.none )
+        UpdateExpert x -> ( {model | experts = updateData x model.experts}, Cmd.none )
+        UpdateSteps x -> ( {model | steps = updateData x model.steps}, Cmd.none )
+        UpdateAvoid x -> ( {model | avoids = updateData x model.avoids}, Cmd.none )
+        UpdateFormat x -> ( {model | formats = updateData x model.formats}, Cmd.none )
+        SavePersona x -> (model, updatePersona x)
+        SaveGoal x -> (model, updateGoal x)
+        SaveExpert x -> (model, updateExpert x)
+        SaveSteps x -> (model, updateSteps x)
+        SaveAvoid x -> (model, updateAvoid x)
+        SaveFormat x -> (model, updateFormat x)
+        DeletePersona x -> (model, deletePersona x)
+        DeleteGoal x -> (model, deleteGoal x)
+        DeleteExpert x -> (model, deleteExpert x)
+        DeleteSteps x -> (model, deleteSteps x)
+        DeleteAvoid x -> (model, deleteAvoid x)
+        SelectPersona x -> ( {model | selectedPersona = Just x}, Cmd.none )
+        SelectGoal x -> ( {model | selectedGoal = Just x}, Cmd.none )
+        SelectExpert x -> ( {model | selectedExpert = Just x}, Cmd.none )
+        SelectSteps x -> ( {model | selectedSteps = Just x}, Cmd.none )
+        SelectAvoid x -> ( {model | selectedAvoid = Just x}, Cmd.none )
+        SelectFormat x -> ( {model | selectedFormat = Just x}, Cmd.none )
+        DataUpdated -> (model, getPersonas Nothing)
+        _ -> (model, Cmd.none)
+
+updateEditPage : Msg -> Model -> (Model, Cmd Msg)
+updateEditPage msg model =
+    case msg of
+        NewPersonaChanged s -> ( {model | newPersona = s}, Cmd.none )
+        NewGoalChanged s -> ( {model | newGoal = s}, Cmd.none )
+        NewExpertChanged s -> ( {model | newExpert = s}, Cmd.none )
+        NewStepsChanged s -> ( {model | newSteps = s}, Cmd.none )
+        NewAvoidChanged s -> ( {model | newAvoid = s}, Cmd.none )
+        NewFormatChanged s -> ( {model | newFormat = s}, Cmd.none )
+        SaveNew url s -> ( { model
+            | newPersona = ""
+            , newGoal = ""
+            , newExpert = ""
+            , newSteps = ""
+            , newAvoid = ""
+            , newFormat = ""}, newData url s )
+        _ -> (model, Cmd.none)
 
 updateData : Data -> RequestStatus (List Data) -> RequestStatus (List Data)
 updateData data list = case list of

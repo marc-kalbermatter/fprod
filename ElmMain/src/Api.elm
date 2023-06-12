@@ -165,6 +165,13 @@ deleteAvoid data = Http.request
     , expect = expectString updateResultToMsg
     }
 
+newData : String -> String -> Cmd Msg
+newData url s = Http.post
+    { url = "http://localhost:4000/" ++ url
+    , body = jsonBody (encodeNewData s)
+    , expect = expectString updateResultToMsg
+    }
+
 resultToRequestStatus : Result Http.Error a -> RequestStatus a
 resultToRequestStatus r = case r of
   Ok x -> Done x
@@ -188,3 +195,8 @@ encodeData : Data -> Json.Encode.Value
 encodeData data =
     Json.Encode.object
         [ ("description", Json.Encode.string data.description)]
+
+encodeNewData : String -> Json.Encode.Value
+encodeNewData s =
+    Json.Encode.object
+        [ ("description", Json.Encode.string s) ]
