@@ -11,56 +11,58 @@ navBar body = div []
     [ nav [ class "navbar navbar-light bg-light navbar-expand-lg mb-5" ]
         [ div [ class "collapse navbar-collapse" ]
             [ a [ class "nav-item nav-link", onClick (NavigateTo HomePage) ] [ text "Home" ]
-            , a [ class "nav-item nav-link", onClick (NavigateTo EditPage) ] [ text "Edit" ]
+            , a [ class "nav-item nav-link", onClick (NavigateTo EditPage) ] [ text "Add New" ]
             ]
         ]
         , div [ class "m-3" ] [ body ]
     ]
 
-viewPersonas : RequestStatus (List Data) -> Html Msg
-viewPersonas personas = div []
-    [ h3 [] [ text "Personas" ]
-    , whenDone personas (viewList UpdatePersona)
+viewPersonas : RequestStatus (List Data) -> Maybe Data -> Html Msg
+viewPersonas personas selected = div []
+    [ h3 [ class "m-3" ] [ text ("Persona: " ++ selectedString selected) ]
+    , whenDone personas (viewList UpdatePersona SavePersona DeletePersona SelectPersona)
     ]
 
-viewGoals : RequestStatus (List Data) -> Html Msg
-viewGoals goals = div []
-    [ h3 [] [ text "Goals" ]
-    , whenDone goals (viewList UpdateGoal)
+viewGoals : RequestStatus (List Data) -> Maybe Data -> Html Msg
+viewGoals goals selected = div []
+    [ h3 [ class "m-3" ] [ text ("Goal: " ++ selectedString selected) ]
+    , whenDone goals (viewList UpdateGoal SaveGoal DeleteGoal SelectGoal)
     ]
 
-viewExperts : RequestStatus (List Data) -> Html Msg
-viewExperts experts = div []
-    [ h3 [] [ text "Experts" ]
-    , whenDone experts (viewList UpdateExpert)
+viewExperts : RequestStatus (List Data) -> Maybe Data -> Html Msg
+viewExperts experts selected = div []
+    [ h3 [ class "m-3" ] [ text ("Expert: " ++ selectedString selected) ]
+    , whenDone experts (viewList UpdateExpert SaveExpert DeleteExpert SelectExpert)
     ]
 
-viewSteps : RequestStatus (List Data) -> Html Msg
-viewSteps steps = div []
-    [ h3 [] [ text "Steps" ]
-    , whenDone steps (viewList UpdateSteps)
+viewSteps : RequestStatus (List Data) -> Maybe Data -> Html Msg
+viewSteps steps selected = div []
+    [ h3 [ class "m-3" ] [ text ("Steps: " ++ selectedString selected) ]
+    , whenDone steps (viewList UpdateSteps SaveSteps DeleteSteps SelectSteps)
     ]
 
-viewAvoids : RequestStatus (List Data) -> Html Msg
-viewAvoids avoids = div []
-    [ h3 [] [ text "Avoids" ]
-    , whenDone avoids (viewList UpdateAvoid)
+viewAvoids : RequestStatus (List Data) -> Maybe Data -> Html Msg
+viewAvoids avoids selected = div []
+    [ h3 [ class "m-3" ] [ text ("Avoid: " ++ selectedString selected) ]
+    , whenDone avoids (viewList UpdateAvoid SaveAvoid DeleteAvoid SelectAvoid)
     ]
 
-viewFormats : RequestStatus (List Data) -> Html Msg
-viewFormats formats = div []
-    [ h3 [] [ text "Formats" ]
-    , whenDone formats (viewList UpdateFormat)
+viewFormats : RequestStatus (List Data) -> Maybe Data -> Html Msg
+viewFormats formats selected = div []
+    [ h3 [ class "m-3" ] [ text ("Format: " ++ selectedString selected) ]
+    , whenDone formats (viewList UpdateFormat SaveFormat DeleteFormat SelectFormat)
     ]
 
-viewList : (Data -> Msg) -> List Data -> Html Msg
-viewList update list = table [] (List.map (\x ->
-    tr [] [ viewData x update ]) list)
+viewList : (Data -> Msg) -> (Data -> Msg) -> (Data -> Msg) -> (Data -> Msg) -> List Data -> Html Msg
+viewList update save delete select list = table [] (List.map (\x ->
+    tr [] [ viewData x update save delete select ]) list)
 
-viewData : Data -> (Data -> Msg) -> Html Msg
-viewData data update = tr []
-    [ input [ value data.description, onInput (\x -> update (Data data.id x)) ] [ ] 
-    , button [ onClick (SavePersona data) ] [ text "Save" ]
+viewData : Data -> (Data -> Msg) -> (Data -> Msg) -> (Data -> Msg) -> (Data -> Msg) -> Html Msg
+viewData data update save delete select = tr []
+    [ input [ value data.description, onInput (\x -> update (Data data.id x)), class "input bg-light m-2" ] [ ] 
+    , button [ onClick (save data), class "button m-2"] [ text "Save" ]
+    , button [ onClick (delete data), class "button m-2" ] [ text "Delete" ]
+    , button [ onClick (select data), class "button m-2" ] [ text "Select" ]
     ]
 
 whenDone : RequestStatus a -> (a -> Html Msg) -> Html Msg
@@ -68,3 +70,8 @@ whenDone s render = case s of
   Done x -> render x
   Loading -> div [] [ text "Loading ..." ]
   Failed err -> div [] [ text ("Request failed: " ++ Debug.toString err) ]
+
+selectedString : Maybe Data -> String
+selectedString s = case s of
+    Nothing -> "nothing selected"
+    Just d -> d.description

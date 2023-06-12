@@ -18,6 +18,12 @@ type alias Model =
     , steps: RequestStatus (List Data)
     , avoids: RequestStatus (List Data)
     , formats: RequestStatus (List Data)
+    , selectedPersona: Maybe Data
+    , selectedGoal: Maybe Data
+    , selectedExpert: Maybe Data
+    , selectedSteps: Maybe Data
+    , selectedAvoid: Maybe Data
+    , selectedFormat: Maybe Data
     , page : Page
     }
 
@@ -39,6 +45,12 @@ initModel =
         , steps = Loading
         , avoids = Loading
         , formats = Loading
+        , selectedPersona = Nothing
+        , selectedGoal = Nothing
+        , selectedExpert = Nothing
+        , selectedSteps = Nothing
+        , selectedAvoid = Nothing
+        , selectedFormat = Nothing
         , page = HomePage
         }
     , getPersonas Nothing
@@ -52,32 +64,34 @@ view model =
                 [
                 div [] -- personas
                     [
-                        viewPersonas model.personas
+                        viewPersonas model.personas model.selectedPersona
                     ]
                 , div [] -- goals
                     [
-                        viewGoals model.goals
+                        viewGoals model.goals model.selectedGoal
                     ]
                 , div [] -- experts
                     [
-                        viewExperts model.experts
+                        viewExperts model.experts model.selectedExpert
                     ]
                 , div [] -- steps
                     [
-                        viewSteps model.steps
+                        viewSteps model.steps model.selectedSteps
                     ]
                 , div [] -- avoids
                     [
-                        viewAvoids model.avoids
+                        viewAvoids model.avoids model.selectedAvoid
                     ]
                 , div [] -- formats
                     [
-                        viewFormats model.formats
+                        viewFormats model.formats model.selectedFormat
                     ]
+                , button [ class "button m-3" ] [ text "Send request to Chat GPT" ]
                 ])
         EditPage -> navBar (
             div []
                 [
+                    text "TODO"
                 ])
 
 update : Msg ->  Model ->  (Model, Cmd Msg)
@@ -95,12 +109,24 @@ update msg model =
         (HomePage, UpdateSteps x) -> ( {model | steps = updateData x model.steps}, Cmd.none )
         (HomePage, UpdateAvoid x) -> ( {model | avoids = updateData x model.avoids}, Cmd.none )
         (HomePage, UpdateFormat x) -> ( {model | formats = updateData x model.formats}, Cmd.none )
-        (_, SavePersona x) -> (model, updatePersona x)
-        (_, SaveGoal x) -> (model, updateGoal x)
-        (_, SaveExpert x) -> (model, updateExpert x)
-        (_, SaveSteps x) -> (model, updateSteps x)
-        (_, SaveAvoid x) -> (model, updateAvoid x)
-        (_, SaveFormat x) -> (model, updateFormat x)
+        (HomePage, SavePersona x) -> (model, updatePersona x)
+        (HomePage, SaveGoal x) -> (model, updateGoal x)
+        (HomePage, SaveExpert x) -> (model, updateExpert x)
+        (HomePage, SaveSteps x) -> (model, updateSteps x)
+        (HomePage, SaveAvoid x) -> (model, updateAvoid x)
+        (HomePage, SaveFormat x) -> (model, updateFormat x)
+        (HomePage, DeletePersona x) -> (model, deletePersona x)
+        (HomePage, DeleteGoal x) -> (model, deleteGoal x)
+        (HomePage, DeleteExpert x) -> (model, deleteExpert x)
+        (HomePage, DeleteSteps x) -> (model, deleteSteps x)
+        (HomePage, DeleteAvoid x) -> (model, deleteAvoid x)
+        (HomePage, SelectPersona x) -> ( {model | selectedPersona = Just x}, Cmd.none )
+        (HomePage, SelectGoal x) -> ( {model | selectedGoal = Just x}, Cmd.none )
+        (HomePage, SelectExpert x) -> ( {model | selectedExpert = Just x}, Cmd.none )
+        (HomePage, SelectSteps x) -> ( {model | selectedSteps = Just x}, Cmd.none )
+        (HomePage, SelectAvoid x) -> ( {model | selectedAvoid = Just x}, Cmd.none )
+        (HomePage, SelectFormat x) -> ( {model | selectedFormat = Just x}, Cmd.none )
+        (HomePage, DataUpdated) -> (model, getPersonas Nothing)
         (_, NavigateTo page) -> ( { model | page = page }, Cmd.none )
         (_, _) -> (model, Cmd.none)
 

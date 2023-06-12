@@ -45,45 +45,124 @@ getFormats url = Http.get
     }
 
 updatePersona : Data -> Cmd Msg
-updatePersona data = Http.post
+updatePersona data = Http.request
     { url = "http://localhost:4000/personas/" ++ String.fromInt data.id
     , body = jsonBody (encodeData data)
-    , expect = expectWhatever updateResultToMsg
+    , expect = expectString updateResultToMsg
+    , method = "PUT"
+    , headers = []
+    , timeout = Nothing
+    , tracker = Nothing
     }
 
 updateGoal : Data -> Cmd Msg
-updateGoal data = Http.post
+updateGoal data = Http.request
     { url = "http://localhost:4000/goals/" ++ String.fromInt data.id
     , body = jsonBody (encodeData data)
-    , expect = expectWhatever updateResultToMsg
+    , expect = expectString updateResultToMsg
+    , method = "PUT"
+    , headers = []
+    , timeout = Nothing
+    , tracker = Nothing
     }
 
 updateExpert : Data -> Cmd Msg
-updateExpert data = Http.post
+updateExpert data = Http.request
     { url = "http://localhost:4000/experts/" ++ String.fromInt data.id
     , body = jsonBody (encodeData data)
-    , expect = expectWhatever updateResultToMsg
+    , expect = expectString updateResultToMsg
+    , method = "PUT"
+    , headers = []
+    , timeout = Nothing
+    , tracker = Nothing
     }
 
 updateSteps : Data -> Cmd Msg
-updateSteps data = Http.post
+updateSteps data = Http.request
     { url = "http://localhost:4000/steps/" ++ String.fromInt data.id
     , body = jsonBody (encodeData data)
-    , expect = expectWhatever updateResultToMsg
+    , expect = expectString updateResultToMsg
+    , method = "PUT"
+    , headers = []
+    , timeout = Nothing
+    , tracker = Nothing
     }
 
 updateAvoid : Data -> Cmd Msg
-updateAvoid data = Http.post
+updateAvoid data = Http.request
     { url = "http://localhost:4000/avoids/" ++ String.fromInt data.id
     , body = jsonBody (encodeData data)
-    , expect = expectWhatever updateResultToMsg
+    , expect = expectString updateResultToMsg
+    , method = "PUT"
+    , headers = []
+    , timeout = Nothing
+    , tracker = Nothing
     }
 
 updateFormat : Data -> Cmd Msg
-updateFormat data = Http.post
+updateFormat data = Http.request
     { url = "http://localhost:4000/formats/" ++ String.fromInt data.id
     , body = jsonBody (encodeData data)
-    , expect = expectWhatever updateResultToMsg
+    , expect = expectString updateResultToMsg
+    , method = "PUT"
+    , headers = []
+    , timeout = Nothing
+    , tracker = Nothing
+    }
+
+deletePersona : Data -> Cmd Msg
+deletePersona data = Http.request
+    { url = "http://localhost:4000/personas/" ++ String.fromInt data.id
+    , body = emptyBody
+    , method = "DELETE"
+    , headers = []
+    , timeout = Nothing
+    , tracker = Nothing
+    , expect = expectString updateResultToMsg
+    }
+
+deleteGoal : Data -> Cmd Msg
+deleteGoal data = Http.request
+    { url = "http://localhost:4000/goals/" ++ String.fromInt data.id
+    , body = emptyBody
+    , method = "DELETE"
+    , headers = []
+    , timeout = Nothing
+    , tracker = Nothing
+    , expect = expectString updateResultToMsg
+    }
+
+deleteExpert : Data -> Cmd Msg
+deleteExpert data = Http.request
+    { url = "http://localhost:4000/experts/" ++ String.fromInt data.id
+    , body = emptyBody
+    , method = "DELETE"
+    , headers = []
+    , timeout = Nothing
+    , tracker = Nothing
+    , expect = expectString updateResultToMsg
+    }
+
+deleteSteps : Data -> Cmd Msg
+deleteSteps data = Http.request
+    { url = "http://localhost:4000/steps/" ++ String.fromInt data.id
+    , body = emptyBody
+    , method = "DELETE"
+    , headers = []
+    , timeout = Nothing
+    , tracker = Nothing
+    , expect = expectString updateResultToMsg
+    }
+
+deleteAvoid : Data -> Cmd Msg
+deleteAvoid data = Http.request
+    { url = "http://localhost:4000/avoids/" ++ String.fromInt data.id
+    , body = emptyBody
+    , method = "DELETE"
+    , headers = []
+    , timeout = Nothing
+    , tracker = Nothing
+    , expect = expectString updateResultToMsg
     }
 
 resultToRequestStatus : Result Http.Error a -> RequestStatus a

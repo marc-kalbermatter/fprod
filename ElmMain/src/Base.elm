@@ -16,16 +16,28 @@ type Msg
     | FormatsReceived (RequestStatus (List Data))
     | UpdatePersona Data
     | SavePersona Data
+    | DeletePersona Data
     | UpdateGoal Data
     | SaveGoal Data
+    | DeleteGoal Data
     | UpdateExpert Data
     | SaveExpert Data
+    | DeleteExpert Data
     | UpdateSteps Data
     | SaveSteps Data
+    | DeleteSteps Data
     | UpdateAvoid Data
     | SaveAvoid Data
+    | DeleteAvoid Data
     | UpdateFormat Data
     | SaveFormat Data
+    | DeleteFormat Data
+    | SelectPersona Data
+    | SelectGoal Data
+    | SelectExpert Data
+    | SelectSteps Data
+    | SelectAvoid Data
+    | SelectFormat Data
     | DataUpdated
     | NoneMsg
 
