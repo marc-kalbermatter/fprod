@@ -9,6 +9,7 @@ executable promptEditor
     build-depends:      base >= 4.7
                         ,sqlite-simple
                         ,aeson
+                        ,wai
                         ,wai-extra
                         ,wai-middleware-static
                         ,wai-cors

@@ -14,16 +14,18 @@ import Data.Monoid (mconcat)
 import Data.Aeson ( eitherDecode, ToJSON )
 import Web.Scotty.Trans
 import Control.Monad.Reader ( ReaderT(runReaderT), MonadTrans (lift) )
+import Network.Wai.Middleware.AddHeaders
 import Network.Wai.Middleware.RequestLogger ( logStdoutDev )
 import Network.Wai.Middleware.Cors ( simpleCors )
 import Network.Wai.Middleware.Static ( (>->), addBase, noDots, staticPolicy, unsafeStaticPolicy )
 import System.Exit ( exitFailure )
 import System.IO ( hPutStrLn, stderr )
+import Web.Scotty.Internal.Types (RoutePattern(Capture))
+import Network.Wai (Middleware)
 
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text.Lazy as T
 import qualified PromptEditor.DB as DB
-import Web.Scotty.Internal.Types (RoutePattern(Capture))
 
 main :: IO ()
 main = do
@@ -66,7 +68,7 @@ readConfigOrExit = do
 application :: ScottyT T.Text App ()
 application = do
     middleware logStdoutDev
-    middleware simpleCors
+    middleware corsMiddleware
 
     get "/" $ file "ElmMain/src/index.html"
 
@@ -82,9 +84,7 @@ application = do
 
     crudEndpoints "formats" envFormatRepository
 
-    --post "/chat-gpt-request" $ do
-    --    requestData <- jsonData
-
+    options (regex "/*") $ do text "Success"
 
 routePattern :: String -> RoutePattern
 routePattern = Capture . T.pack
@@ -114,3 +114,11 @@ crudEndpoints typeName env = do
     delete (routePattern ("/" ++ typeName ++ "/:id")) $ do
         id <- param "id"
         lift $ deleteAction env id
+
+corsMiddleware :: Middleware
+corsMiddleware = addHeaders
+    [
+        ("Access-Control-Allow-Origin", "*"),
+        ("Access-Control-Allow-Headers", "*"),
+        ("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+    ]
